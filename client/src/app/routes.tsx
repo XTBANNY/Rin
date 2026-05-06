@@ -150,11 +150,15 @@ function AppRoute({
   const siteConfig = useSiteConfig();
   const { t } = useTranslation();
 
-  // --- 首页 SEO 标题“死逻辑” ---
+  // --- 首页 SEO 标题“优雅锁死”逻辑 ---
   useLayoutEffect(() => {
-    if (path === "/") {
-      // 在这里直接写死你的首页标题，完全无视配置项
-      document.title = "Web3村长 | AI工具、区块链实操、网络媒体运营 - 探索技术出海与变现"; 
+    // 读取 index.html 中定义的全局变量，如果没有定义则给个兜底值
+    const SEO_TITLE = (window as any).SITE_SEO_TITLE || "Web3村长";
+
+    if (path === "/" || window.location.pathname === "/") {
+      if (document.title !== SEO_TITLE) {
+        document.title = SEO_TITLE;
+      }
     }
   }, [path]); 
 
