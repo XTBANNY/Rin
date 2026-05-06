@@ -234,10 +234,11 @@ async function generateFeed(env: Env, db: DB, frontendUrl: string, c?: AppContex
             }
         }
 
-        feed.addItem({
+    feed.addItem({
             title: other.title || "No title",
             id: other.id?.toString() || "0",
-            link: `${frontendUrl}/feed/${other.id}`,
+            // 逻辑：如果有 alias(slug) 就用 alias，没有才回退到 feed/id
+            link: other.alias ? `${frontendUrl}/${other.alias}` : `${frontendUrl}/feed/${other.id}`, 
             date: other.createdAt,
             description: summary.length > 0
                 ? summary
