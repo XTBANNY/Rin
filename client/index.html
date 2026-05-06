@@ -3,8 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- 1. 直接写死 SEO 标题 -->
+    <!-- 1. 首页 SEO 标题（以此处为准） -->
     <title>Web3村长 | AI工具、区块链实操、网络媒体运营 - 探索技术出海与变现</title>
+    <script>
+      // 将上面的标题自动同步给全局变量，供 React 路由读取
+      window.SEO_TITLE = document.title;
+    </script>
     <script data-cfasync="false" src="/api/config/client/bootstrap.js"></script>
   </head>
   <body>
