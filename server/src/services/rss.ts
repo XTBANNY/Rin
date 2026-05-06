@@ -104,15 +104,15 @@ async function handleFeed(c: AppContext, fileName: string) {
     }
 }
 
-async function generateFeed(env: Env, db: DB, frontendUrl: string, c?: AppContext) {
+async function generateFeed(env: any, db: DB, frontendUrl: string, c?: AppContext) {
     if (c) {
         await profileAsync(c, 'rss_init_modules', () => initRSSModules());
     } else {
         await initRSSModules();
     }
 
-    // 自动识别域名优先级：环境变量 > 实时请求域名
-    const baseUrl = env.SITE_URL || frontendUrl;
+    // 修正点：使用索引访问 ['SITE_URL'] 绕过 Env 类型定义的限制
+    const baseUrl = env['SITE_URL'] || frontendUrl;
 
     const feedConfig: any = {
         title: env.RSS_TITLE || "Rin Feed",
@@ -132,7 +132,6 @@ async function generateFeed(env: Env, db: DB, frontendUrl: string, c?: AppContex
         where: and(eq(feeds.draft, 0), eq(feeds.listed, 1)),
         orderBy: [desc(feeds.createdAt), desc(feeds.updatedAt)],
         limit: 20,
-        // 显式声明 columns 确保获取 alias
         columns: {
             id: true,
             alias: true, 
@@ -147,9 +146,7 @@ async function generateFeed(env: Env, db: DB, frontendUrl: string, c?: AppContex
         },
     };
 
-    // 使用 as any 避开严格的 TS 检查
     const feed_list = (await db.query.feeds.findMany(queryConfig as any)) as any[];
-
     const feed = new Feed(feedConfig);
 
     for (const f of feed_list) {
@@ -168,9 +165,7 @@ async function generateFeed(env: Env, db: DB, frontendUrl: string, c?: AppContex
             }
         }
 
-        // 拼接路径逻辑：优先别名
         const itemPath = f.alias ? `/${f.alias}` : `/feed/${f.id}`;
-        // 拼接绝对链接
         const absoluteLink = baseUrl ? `${baseUrl}${itemPath}` : itemPath;
 
         feed.addItem({
@@ -189,7 +184,6 @@ async function generateFeed(env: Env, db: DB, frontendUrl: string, c?: AppContex
 }
 
 export async function rssCrontab(env: Env, db: DB) {
-    // 定时任务中没有 Request，所以传入空字符串，generateFeed 会回退到 SITE_URL
     const feed = await generateFeed(env, db, '');
     const folder = env.S3_CACHE_FOLDER || "cache/";
 
