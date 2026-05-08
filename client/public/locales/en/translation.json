@@ -4,6 +4,7 @@
     "title": "About"
   },
   "privacy": "Privacy Policy",
+  "Terms of Service": "Terms of Service",
   "admin": {
     "back_to_site": "Back to site",
     "compat_tasks_description": "Run compatibility jobs in bulk to backfill missing AI summaries and image blurhash metadata for older posts.",
