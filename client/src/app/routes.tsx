@@ -182,27 +182,38 @@ function AppRoute({
         const resolvedContent = typeof content === "function" ? content(params) : content;
         const layoutDefinition = getHeaderLayoutDefinition(siteConfig.headerLayout);
 
+      // routes.tsx 里的 AppRoute 组件渲染部分 (约 175 行)
+
        return layoutDefinition.renderRouteShell({
           header: <Header>{headerComponent}</Header>,
           content: (
-            /* 外层容器保持 relative，作为定位基准 */
             <div className="relative">
               
-              {/* 💡 左侧精致挂件区 */}
+              {/* 左侧精致挂件区：全站显示 */}
               <aside className="hidden 2xl:block absolute w-[240px] z-10" 
                      style={{ 
-                       /* 1. 高度降低：设置 top 偏移，使其低于文章标题 */
                        top: '170px', 
-                       /* 2. 对齐头像：根据 RIN 默认布局计算，头像通常在中心向左偏移约 580px 处 */
-                       /* 我们让挂件的左侧与 1200px 容器的边缘对齐 */
                        left: 'calc(50% - 750px)' 
                      }}>
-                <div className="transform scale-95 origin-top-left"> {/* 3. 整体缩小：更加精致 */}
+                <div className="transform scale-95 origin-top-left">
                   <Padding mode="left" />
                 </div>
               </aside>
 
-              {/* 💡 中间内容区：官方原版框架，0 动动，0 挤压 */}
+              {/* 💡 增加：右侧挂件，仅在首页 (path === "/") 显示 */}
+              {path === "/" && (
+                <aside className="hidden 2xl:block absolute w-[280px] z-10" 
+                       style={{ 
+                         top: '150px', 
+                         left: 'calc(50% + 490px)' 
+                       }}>
+                  <div className="transform scale-95 origin-top-left">
+                    <Padding mode="right" />
+                  </div>
+                </aside>
+              )}
+
+              {/* 中间内容区 */}
               <Padding className={paddingClassName}>
                 {resolvedContent}
               </Padding>
