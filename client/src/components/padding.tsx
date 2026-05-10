@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Padding as RinPadding } from "@rin/ui";
 
-export function Padding({ children, className, mode = 'both' }: { children?: React.ReactNode, className?: string, mode?: 'left' | 'both' }) {
+// 💡 这里的 mode 增加了 'right' 类型
+export function Padding({ children, className, mode = 'both' }: { children?: React.ReactNode, className?: string, mode?: 'left' | 'right' | 'both' }) {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    if (mode === 'left') {
+    // 只有左侧和右侧模式才去抓取 JSON，both 模式（中间正文）不抓取
+    if (mode === 'left' || mode === 'right') {
       fetch('https://video.cunzhangai.com/sidebar.json', { cache: 'no-cache' })
         .then(res => res.json())
         .then(json => setData(json))
@@ -13,21 +15,18 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
     }
   }, [mode]);
 
-  // --- 处理左侧挂件模式 ---
+  // --- 1. 处理左侧挂件模式 (完全保持你原来的代码逻辑，不改动) ---
   if (mode === 'left') {
     if (!data || !data.leftCard) return null;
 
-    // 图标映射逻辑
     const getIconUrl = (platform: string) => {
       const p = platform.toLowerCase();
-      // 特殊处理常用的 key
       const iconName = p === 'youtube' ? 'youtube-play' : (p === 'telegram' ? 'telegram-app' : p);
       return `https://img.icons8.com/ios-filled/50/ffffff/${iconName}.png`;
     };
 
     return (
       <div className="flex flex-col gap-5 w-full">
-        {/* 1. 名片区：带有底部圆角对称弧度 */}
         <div className="bg-white rounded-[1.8rem] overflow-hidden shadow-sm border border-gray-100">
           <div className="bg-gradient-to-br from-[#0f766e] to-[#134e4a] p-5 text-center rounded-b-[1.8rem] overflow-hidden">
             <div className="w-14 h-14 bg-white/20 rounded-full mx-auto mb-3 border border-white/30 overflow-hidden flex items-center justify-center">
@@ -36,7 +35,6 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
             <h3 className="text-white font-bold text-base leading-tight">{data.leftCard.name}</h3>
             <p className="text-teal-100 text-[9px] mt-1 tracking-widest uppercase opacity-80">{data.leftCard.title}</p>
 
-            {/* 动态社交图标组 */}
             {data.leftCard.socials && (
               <div className="mt-4 pt-4 border-t border-white/10 flex justify-center gap-3">
                 {Object.entries(data.leftCard.socials).map(([platform, link]: [string, any]) => {
@@ -51,10 +49,7 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
                   return (
                     <a key={platform} href={link} target="_blank" rel="noreferrer" 
                        className="w-8 h-8 bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all hover:-translate-y-1 rounded-full ring-1 ring-white/10 shadow-sm">
-                      <img 
-                        src={getIconUrl(platform)} 
-                        className="w-4 h-4" 
-                        alt={platform}
+                      <img src={getIconUrl(platform)} className="w-4 h-4" alt={platform}
                         onError={(e: any) => { e.target.src = 'https://img.icons8.com/ios-filled/50/ffffff/link.png' }}
                       />
                     </a>
@@ -63,7 +58,6 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
               </div>
             )}
           </div>
-          
           <div className="p-4 bg-white text-left">
             <ul className="space-y-2.5">
               {data.leftCard.services?.map((s: string, i: number) => (
@@ -74,8 +68,6 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
             </ul>
           </div>
         </div>
-
-        {/* 2. 图片区：修复了图片的底部圆角 */}
         {data.ad && (
           <a href={data.ad.link} target="_blank" rel="noreferrer" className="block w-full rounded-[1.8rem] overflow-hidden shadow-sm border border-gray-100 bg-white group transition-all">
             <div className="relative overflow-hidden bg-gray-50 rounded-b-[1.8rem]">
@@ -90,8 +82,6 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
             </div>
           </a>
         )}
-
-        {/* 3. 实用工具列表 */}
         {data.selection && (
           <div className="bg-white rounded-[1.8rem] p-4 border border-gray-100 shadow-sm text-left">
             <h4 className="text-[11px] font-black text-gray-400 mb-3 tracking-widest uppercase flex items-center px-1">
@@ -111,6 +101,30 @@ export function Padding({ children, className, mode = 'both' }: { children?: Rea
     );
   }
 
-  // --- 默认主容器模式 ---
+  // --- 💡 2. 增加：右侧推荐阅读渲染 (手动文字链模式) ---
+  if (mode === 'right') {
+    if (!data || !data.latestPosts) return null;
+    return (
+      <div className="flex flex-col gap-5 w-full text-left">
+        <div className="bg-white rounded-[1.8rem] p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50">
+            <span className="text-lg">🔥</span>
+            <h4 className="font-bold text-gray-800 text-[15px]">推荐阅读</h4>
+          </div>
+          <nav className="flex flex-col">
+            {data.latestPosts.map((post: any, i: number) => (
+              <a key={i} href={post.url} className="py-3 border-b border-gray-50 last:border-0 flex items-start gap-2 group transition-all">
+                <span className="text-gray-300 group-hover:text-[#0f766e] transition-colors mt-0.5">#</span>
+                <span className="text-[14px] font-medium text-gray-600 group-hover:text-[#0f766e] group-hover:translate-x-1 transition-all duration-300 line-clamp-1">
+                  {post.title}
+                </span>
+              </a>
+            ))}
+          </nav>
+        </div>
+      </div>
+    );
+  }
+
   return <RinPadding className={className}>{children}</RinPadding>;
 }
