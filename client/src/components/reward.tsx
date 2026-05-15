@@ -122,7 +122,7 @@ export function Reward() {
         onClick={() => setMethod('menu')}
        className="bg-gradient-to-r from-[#0f766e] to-[#134e4a] text-white px-12 py-4 rounded-full font-bold shadow-lg hover:shadow-[#0f766e]/30 hover:scale-105 active:scale-95 transition-all text-sm"
       >
-        ❤️ 请村长喝杯咖啡
+        ❤️ 请老板喝杯咖啡
       </button>
 
       {method !== '' && createPortal(ModalContent, document.body)}
