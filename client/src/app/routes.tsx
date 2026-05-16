@@ -27,6 +27,7 @@ import { SearchPage } from "../page/search";
 import { Settings } from "../page/settings";
 import { TimelinePage } from "../page/timeline";
 import { WritingPage } from "../page/writing";
+import { ArticlesPage } from "../page/articles";
 import { ProfileContext } from "../state/profile";
 import { tryInt } from "../utils/int";
 import { useTranslation } from "react-i18next";
@@ -78,6 +79,10 @@ export function AppRoutes() {
 
       <AdminRoute path="/admin/compat-tasks" requirePermission title={t("compat_tasks.title")} description={t("admin.compat_tasks_description")}>
         <CompatTasksPage />
+      </AdminRoute>
+
+      <AdminRoute path="/admin/articles" requirePermission title="文章管理" description="管理所有文章，支持编辑、置顶、删除等操作">
+        <ArticlesPage />
       </AdminRoute>
 
       <AdminRoute path="/admin/writing" requirePermission title={t("writing")} description={t("admin.writing_description")}>
