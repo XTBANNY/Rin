@@ -83,8 +83,8 @@ export function FeedService(): Hono<{
             orderBy: [desc(feeds.top), desc(feeds.createdAt), desc(feeds.updatedAt)],
             offset: page_num * limit_num,
             limit: limit_num + 1,
-        }))).map(({ content, hashtags, summary, ...other }: any) => {
-            const avatar = extractImageWithMetadata(content);
+        }))).map(({ content, hashtags, summary, cover, ...other }: any) => {
+            const avatar = cover || extractImageWithMetadata(content);
             return {
                 summary: summary.length > 0 ? summary : content.length > 100 ? content.slice(0, 100) : content,
                 hashtags: hashtags.map(({ hashtag }: any) => hashtag),
@@ -129,7 +129,7 @@ export function FeedService(): Hono<{
         const admin = c.get('admin');
         const uid = c.get('uid');
         const body = await profileAsync(c, 'feed_create_parse', () => c.req.json());
-        const { title, alias, listed, content, summary, draft, tags, createdAt } = body;
+        const { title, alias, listed, content, summary, draft, tags, createdAt, cover } = body;
 
         if (!admin) {
             return c.text('Permission denied', 403);
@@ -160,6 +160,7 @@ export function FeedService(): Hono<{
             title,
             content,
             summary,
+            cover: cover || null,
             ai_summary: "",
             ai_summary_status: "idle",
             ai_summary_error: "",
@@ -375,7 +376,7 @@ export function FeedService(): Hono<{
         const uid = c.get('uid');
         const id = c.req.param('id');
         const body = await profileAsync(c, 'feed_update_parse', () => c.req.json());
-        const { title, listed, content, summary, alias, draft, top, tags, createdAt } = body;
+        const { title, listed, content, summary, alias, draft, top, tags, createdAt, cover } = body;
 
         const id_num = parseInt(id);
         const feed = await profileAsync(c, 'feed_update_lookup', () => db.query.feeds.findFirst({ where: eq(feeds.id, id_num) }));
@@ -397,6 +398,7 @@ export function FeedService(): Hono<{
             title,
             content,
             summary,
+            cover: cover !== undefined ? (cover || null) : undefined,
             ai_summary: shouldQueueAISummary ? "" : undefined,
             ai_summary_status: isDraft ? "idle" : undefined,
             ai_summary_error: shouldQueueAISummary || isDraft ? "" : undefined,

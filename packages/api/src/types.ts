@@ -72,6 +72,7 @@ export interface CreateFeedRequest {
   content: string;
   summary?: string;
   alias?: string;
+  cover?: string;
   draft: boolean;
   listed: boolean;
   createdAt?: string;
@@ -83,6 +84,7 @@ export interface UpdateFeedRequest {
   content?: string;
   summary?: string;
   alias?: string;
+  cover?: string;
   listed: boolean;
   draft?: boolean;
   createdAt?: string;

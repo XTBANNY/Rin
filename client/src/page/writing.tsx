@@ -23,6 +23,7 @@ async function publish({
   tags,
   draft,
   createdAt,
+  cover,
   onCompleted,
   showAlert
 }: {
@@ -34,6 +35,7 @@ async function publish({
   draft: boolean;
   alias?: string;
   createdAt?: Date;
+  cover?: string;
   onCompleted?: () => void;
   showAlert: ShowAlertType;
 }) {
@@ -47,6 +49,7 @@ async function publish({
       tags,
       listed,
       draft,
+      cover: cover || undefined,
       createdAt: createdAt?.toISOString(),
     }
   );
@@ -74,6 +77,7 @@ async function update({
   listed,
   draft,
   createdAt,
+  cover,
   onCompleted,
   showAlert
 }: {
@@ -86,6 +90,7 @@ async function update({
   tags?: string[];
   draft?: boolean;
   createdAt?: Date;
+  cover?: string;
   onCompleted?: () => void;
   showAlert: ShowAlertType;
 }) {
@@ -100,6 +105,7 @@ async function update({
       tags,
       listed,
       draft,
+      cover: cover || undefined,
       createdAt: createdAt?.toISOString(),
     }
   );
@@ -125,6 +131,7 @@ export function WritingPage({ id }: { id?: number }) {
   const [summary, setSummary] = cache.useCache("summary", "");
   const [tags, setTags] = cache.useCache("tags", "");
   const [alias, setAlias] = cache.useCache("alias", "");
+  const [cover, setCover] = cache.useCache("cover", "");
   const [draft, setDraft] = useState(false);
   const [listed, setListed] = useState(true);
   const [content, setContent] = cache.useCache("content", "");
@@ -146,6 +153,7 @@ export function WritingPage({ id }: { id?: number }) {
         content,
         summary,
         alias,
+        cover,
         tags: tagsplit,
         draft,
         listed,
@@ -172,6 +180,7 @@ export function WritingPage({ id }: { id?: number }) {
         tags: tagsplit,
         draft,
         alias,
+        cover,
         listed,
         createdAt,
         onCompleted: () => {
@@ -192,6 +201,7 @@ export function WritingPage({ id }: { id?: number }) {
             if (tags == "" && data.hashtags)
               setTags(data.hashtags.map(({ name }: {name: string}) => `#${name}`).join(" "));
             if (alias == "" && (data as any).alias) setAlias((data as any).alias);
+            if (cover == "" && (data as any).cover) setCover((data as any).cover);
             if (content == "") setContent(data.content);
             if (summary == "") setSummary((data as any).summary || "");
             setListed((data as any).listed === 1);
@@ -282,6 +292,14 @@ export function WritingPage({ id }: { id?: number }) {
               value={tags}
               setValue={setTags}
               placeholder={t("tags")}
+              variant="flat"
+              className="lg:col-span-2"
+            />
+            <Input
+              id={id}
+              value={cover}
+              setValue={setCover}
+              placeholder="封面图 URL（留空自动提取文章内第一张图片）"
               variant="flat"
               className="lg:col-span-2"
             />
