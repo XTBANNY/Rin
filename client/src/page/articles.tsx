@@ -1,12 +1,12 @@
-import { SettingsCard, SettingsCardBody, SettingsCardHeader, SettingsBadge, Button } from "@rin/ui";
+import { SettingsCard, SettingsCardBody, SettingsCardHeader, SettingsBadge } from "@rin/ui";
 import { client } from "../app/runtime";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { useTranslation } from "react-i18next";
 import ReactLoading from "react-loading";
 import { useSiteConfig } from "../hooks/useSiteConfig";
 import { Link } from "wouter";
 import { useAlert, useConfirm } from "../components/dialog";
+import { Button } from "@rin/ui";
 
 interface FeedItem {
   id: number;
@@ -24,15 +24,14 @@ interface FeedItem {
 }
 
 export function ArticlesPage() {
-  const { t } = useTranslation();
   const siteConfig = useSiteConfig();
   const [loading, setLoading] = useState(true);
   const [feeds, setFeeds] = useState<FeedItem[]>([]);
   const [hasNext, setHasNext] = useState(false);
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<"all" | "published" | "draft" | "unlisted">("all");
-  const alert = useAlert();
-  const confirm = useConfirm();
+  const { showAlert, AlertUI } = useAlert();
+  const { showConfirm, ConfirmUI } = useConfirm();
 
   const fetchFeeds = (p: number, type?: string) => {
     setLoading(true);
@@ -42,7 +41,7 @@ export function ArticlesPage() {
 
     client.feed.list(params).then(({ data, error }: any) => {
       if (error) {
-        alert(error.value || "加载失败");
+        showAlert(error.value || "加载失败");
       } else if (data) {
         let items = data.data || data;
         if (type === "published") {
@@ -59,30 +58,30 @@ export function ArticlesPage() {
     fetchFeeds(page, filter === "all" ? undefined : filter);
   }, [page, filter]);
 
-  const handleDelete = async (id: number, title: string) => {
-    const ok = await confirm(`确定删除「${title}」吗？此操作不可恢复。`);
-    if (!ok) return;
-    const { error } = await client.feed.delete(id) as any;
-    if (error) {
-      alert(error.value || "删除失败");
-    } else {
-      fetchFeeds(page, filter === "all" ? undefined : filter);
-    }
+  const handleDelete = (id: number, title: string) => {
+    showConfirm("确认删除", `确定删除「${title}」吗？此操作不可恢复。`, async () => {
+      const { error } = await client.feed.delete(id) as any;
+      if (error) {
+        showAlert(error.value || "删除失败");
+      } else {
+        fetchFeeds(page, filter === "all" ? undefined : filter);
+      }
+    });
   };
 
   const handleToggleTop = async (id: number, currentTop: number) => {
     const { error } = await client.feed.setTop(id, currentTop > 0 ? 0 : 1) as any;
     if (error) {
-      alert(error.value || "操作失败");
+      showAlert(error.value || "操作失败");
     } else {
       fetchFeeds(page, filter === "all" ? undefined : filter);
     }
   };
 
   const handleToggleDraft = async (id: number, currentDraft: number) => {
-    const { error } = await client.feed.update(id, { draft: currentDraft ? 0 : 1 }) as any;
+    const { error } = await client.feed.update(id, { draft: currentDraft ? false : true, listed: true }) as any;
     if (error) {
-      alert(error.value || "操作失败");
+      showAlert(error.value || "操作失败");
     } else {
       fetchFeeds(page, filter === "all" ? undefined : filter);
     }
@@ -107,6 +106,9 @@ export function ArticlesPage() {
       <Helmet>
         <title>{`文章管理 - ${siteConfig.name}`}</title>
       </Helmet>
+
+      <AlertUI />
+      <ConfirmUI />
 
       {/* 统计卡片 */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -143,7 +145,7 @@ export function ArticlesPage() {
         </div>
         <div className="ml-auto">
           <Link href="/admin/writing">
-            <Button>+ 写文章</Button>
+            <Button title="+ 写文章" onClick={() => {}} />
           </Link>
         </div>
       </div>
@@ -173,7 +175,7 @@ export function ArticlesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       {feed.top > 0 ? (
-                        <span className="text-xs text-theme font-bold">📌 置顶</span>
+                        <span className="text-xs text-theme font-bold">置顶</span>
                       ) : null}
                       <h3 className="truncate text-base font-semibold t-primary">
                         <Link href={`/admin/writing/${feed.id}`} className="hover:text-theme transition-colors">
@@ -189,7 +191,7 @@ export function ArticlesPage() {
                       <span>ID: {feed.id}</span>
                       {feed.alias ? <span>别名: {feed.alias}</span> : null}
                       <span>创建: {formatDate(feed.createdAt)}</span>
-                      <span>👁 {feed.pv || 0} PV</span>
+                      <span>{feed.pv || 0} PV</span>
                       {feed.hashtags?.length ? (
                         <span>标签: {feed.hashtags.map(h => h.name).join(", ")}</span>
                       ) : null}
